@@ -1,5 +1,5 @@
 <template>
-<v-layout align-center justify-center>
+<v-layout justify-center>
   <matrix-editable/>
 </v-layout>
 </template>
