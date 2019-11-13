@@ -106,21 +106,6 @@ export function buildExpression(elements, operators) {
     
 }
 
-/*function resolveVariety(values) { // [1,[4,5],3] -> [[1,4,3],[1,5,3]]
-    const result = [];
-    const valuesLength = values.length;
-    for(let item = 0; item < valuesLength; item++) {
-        if(Array.isArray(values[item])) {
-            const head = values.slice(0, item);
-            const tail = values.slice(item).slice(1);
-            values[item].forEach(element => result.push([...head, element, ...tail]));
-            break;
-        }
-    }
-
-    return result;
-}*/
-
 function tryEquate(operators, elements) {
     const equation = zipSignsNumbers(operators, elements);
     const equationParts = equation.split('=');

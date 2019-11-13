@@ -79,11 +79,20 @@
           </v-card>
           <v-layout class="ma-0" justify-center>
                 <v-container class="mt-2 pa-0" >
+                  <v-card-text>Rows</v-card-text>
                     <v-sheet tile class="pattern text-center white--text"
-                    v-for="(item, index) in newPattern"
+                    v-for="(item, index) in newPattern.horisontalPatterns"
                     color="primary"
                     :key="index">
-                      {{item}}
+                      {{outMatrixRow(item.signs,item.digits)}}
+                      </v-sheet>
+                      <v-divider/>
+                      <v-card-text>Column signs</v-card-text>
+                      <v-sheet tile class="pattern text-center white--text"
+                    v-for="(item, index) in newPattern.verticalSigns"
+                    color="primary"
+                    :key="index">
+                      {{item.toString().replace('[','').replace(']','').replace(/,/g,'  ')}}
                       <v-divider/>
                     </v-sheet>
                     <v-spacer/>
