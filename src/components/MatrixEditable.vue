@@ -1,7 +1,9 @@
 <template>
-<v-layout wrap>
+<v-layout wrap justify-space-between>
   <v-overlay :value="loading">
-      <v-progress-circular indeterminate size="104"></v-progress-circular>
+    <v-layout wrap justify-center>
+      <v-progress-circular indeterminate size="104" class="ma-4"></v-progress-circular>
+    </v-layout>
     </v-overlay>
     <v-card outlined class="ma-2" width="500">
         <v-card-title>Selected equation patterns:
@@ -37,6 +39,73 @@
               :value="n"
             ></v-radio>
           </v-radio-group>
+        </v-card-actions>
+    </v-card>
+    <v-card outlined class="ma-2" width="400" max-width="400">
+        <v-card-title>New pattern:</v-card-title>
+        <v-divider/>
+        <v-card-actions>
+          <v-container>
+          <v-card outlined class="pa-2">
+            <v-text-field
+            class="ma-0 mt-2"
+            label="Equation elements"
+            dense
+            v-model="editableElements"
+            prepend-inner-icon="mdi-marker"
+          ></v-text-field>
+          <v-text-field
+            label="Equation signs"
+            dense
+            class="ma-0 mt-2"
+            v-model="editableSigns"
+            prepend-inner-icon="mdi-marker"
+          ></v-text-field>
+          <v-btn text color="primary" @click="addEquation">
+          <v-icon class="mr-1">mdi-plus</v-icon> Add Equation row
+          </v-btn>
+          </v-card>
+          <v-card outlined class="pa-2 mt-1">
+          <v-text-field
+            label="Equation vertical signs"
+            dense
+            class="ma-0 mt-2"
+            v-model="editableInterSigns"
+            prepend-inner-icon="mdi-marker"
+          ></v-text-field>
+          <v-btn text color="primary" @click="addVerticalSigns">
+          <v-icon class="mr-1">mdi-plus</v-icon> Add Vertical Signs row
+          </v-btn>
+          </v-card>
+          <v-layout class="ma-0" justify-center>
+                <v-container class="mt-2 pa-0" >
+                    <v-sheet tile class="pattern text-center white--text"
+                    v-for="(item, index) in newPattern"
+                    color="primary"
+                    :key="index">
+                      {{item}}
+                      <v-divider/>
+                    </v-sheet>
+                    <v-spacer/>
+            <v-btn text color="primary" @click="savePattern">
+              <v-icon class="mr-1">mdi-plus</v-icon> Save Pattern
+            </v-btn>
+                </v-container>
+            </v-layout>
+          </v-container>
+        </v-card-actions>
+    </v-card>
+    <v-card outlined class="ma-2" width="400" max-width="400">
+        <v-card-title>Evaluation Log</v-card-title>
+        <v-divider/>
+        <v-card-actions>
+          <v-card flat  class="pa-2">
+            <span v-for="(item, index) in currentOperation"
+            :key="index"
+            class="number">
+            {{ item }}<br>
+            </span>
+          </v-card>
         </v-card-actions>
     </v-card>
     <v-card outlined class="ma-2 px-0" min-width="1600">
@@ -86,7 +155,7 @@
 <script>
 /* eslint-disable */
 import MatrixCell from './MatrixCell.vue';
-import { buildExpression, solutions, zipSignsNumbers, evaluateExpressionMatrix, transpose } from '../generator';
+import { buildExpression, latestAction, zipSignsNumbers, evaluateExpressionMatrix, transpose } from '../generator';
 
 export default {
   components: {
@@ -97,9 +166,17 @@ export default {
     results: [],
     loading: false,
     radioGroup: 1,
+    currentOperation: latestAction,
     matrices: undefined,
-    input: {
-      1:{
+    editableSigns: '',
+    editableInterSigns: '',
+    editableElements: '',
+    newPattern:{
+        horisontalPatterns:[],
+        verticalSigns:[]
+    },
+    input: [
+      {
         horisontalPatterns:[
           { digits:['▢', 2, '▢', 5, 30,], signs: ['+','*','*','='] },
           { digits:['▢', '▢', 16,'▢', '▢▢'], signs: ['+','-','*', '='] },
@@ -115,7 +192,7 @@ export default {
           ['+','+','+', '=']
         ]
       },
-      2:{
+      {
         horisontalPatterns:[
           { digits:['▢','▢', '▢▢',], signs: ['+','='] },
           { digits:['▢▢', '▢', '▢'], signs: ['-', '='] },
@@ -127,7 +204,7 @@ export default {
           ['*', '='],
         ]
       },
-     3:{
+      {
         horisontalPatterns:[
           { digits:['▢▢','▢', '▢▢',], signs: ['-','='] },
           { digits:['▢', '▢', '▢▢'], signs: ['+', '='] },
@@ -139,7 +216,7 @@ export default {
           ['*', '='],
         ]
       },
-      4:{
+      {
         horisontalPatterns:[
           { digits:[5, '▢', '▢▢',], signs: ['+','='] },
           { digits:['▢', 5, '▢▢'], signs: ['+', '='] },
@@ -151,7 +228,7 @@ export default {
           ['*', '='],
         ]
       },
-      5:{
+      {
         horisontalPatterns:[
           { digits:[5, '▢▢', '▢▢',], signs: ['+','='] },
           { digits:['▢', 5, '▢▢'], signs: ['+', '='] },
@@ -162,10 +239,9 @@ export default {
           ['+', '+','='],
           ['+', '+', '='],
           ['*', '+', '='],
-          ['*', '+', '='],
-        ]
+        ],
       },
-    },
+    ],
     matrixData: [],
     editMatrixData: [],
   }),
@@ -186,13 +262,29 @@ export default {
       this.loading = true;
       setTimeout(() => {
           let res = evaluateExpressionMatrix(this.input[this.radioGroup]);;
-          this.results = res;
+          this.results = [...res];
           this.loading = false;
         }, 1000)
       
     },
     outMatrixRow(index, value) {
-      return zipSignsNumbers(index, value)//.toString().replace('[','').replace(']','').replace(/,/g,'|');
+      return zipSignsNumbers(index, value);
+    },
+    addEquation(){
+      if(this.editableElements.split(',').length - this.editableSigns.split(',').length !== 1) {
+        alert('Wrong equation input!');
+      }
+      else
+      this.newPattern.horisontalPatterns.push({ digits:this.editableElements.split(','), signs: this.editableSigns.split(',') });
+        
+    },
+    addVerticalSigns(){
+      this.newPattern.verticalSigns.push(
+        this.editableInterSigns.split(',')
+      );
+    },
+    savePattern(){
+      this.input.push(this.newPattern);
     }
   },
 };
