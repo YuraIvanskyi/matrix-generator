@@ -1,9 +1,10 @@
 <template>
-<v-layout wrap justify-space-between>
-  <v-overlay :value="loading">
-    <v-layout wrap justify-center>
-      <v-progress-circular indeterminate size="104" class="ma-4"></v-progress-circular>
-    </v-layout>
+<v-layout wrap justify-space-around>
+  <v-overlay z-index="10" :value="loading">
+    <v-container wrap justify-center>
+      <v-progress-circular indeterminate width="20" size="164"></v-progress-circular>
+      <v-card-title>Calculating...</v-card-title>
+    </v-container>
     </v-overlay>
     <v-card outlined class="ma-2" width="500">
         <v-card-title>Selected equation patterns:
@@ -33,15 +34,15 @@
         <v-card-actions>
           <v-radio-group v-model="radioGroup">
             <v-radio
-              v-for="n in Object.keys(input)"
-              :key="n"
+              v-for="(n,i) in Object.keys(input)"
+              :key="i"
               :label="`Pattern ${n}`"
               :value="n"
             ></v-radio>
           </v-radio-group>
         </v-card-actions>
     </v-card>
-    <v-card outlined class="ma-2" width="400" max-width="400">
+    <v-card outlined class="ma-2" width="400" max-width="500">
         <v-card-title>New pattern:</v-card-title>
         <v-divider/>
         <v-card-actions>
@@ -79,7 +80,7 @@
           </v-card>
           <v-layout class="ma-0" justify-center>
                 <v-container class="mt-2 pa-0" >
-                  <v-card-text>Rows</v-card-text>
+                  <v-card-text class="ma-0">Rows</v-card-text>
                     <v-sheet tile class="pattern text-center white--text"
                     v-for="(item, index) in newPattern.horisontalPatterns"
                     color="primary"
@@ -87,7 +88,7 @@
                       {{outMatrixRow(item.signs,item.digits)}}
                       </v-sheet>
                       <v-divider/>
-                      <v-card-text>Column signs</v-card-text>
+                      <v-card-text class="ma-0">Column signs</v-card-text>
                       <v-sheet tile class="pattern text-center white--text"
                     v-for="(item, index) in newPattern.verticalSigns"
                     color="primary"
@@ -104,11 +105,11 @@
           </v-container>
         </v-card-actions>
     </v-card>
-    <v-card outlined class="ma-2" width="400" max-width="400">
+    <v-card outlined class="ma-2" width="400" max-width="500">
         <v-card-title>Evaluation Log</v-card-title>
         <v-divider/>
         <v-card-actions>
-          <v-card flat  class="pa-2">
+          <v-card flat  class="pa-2" scrollable >
             <span v-for="(item, index) in currentOperation"
             :key="index"
             class="number">
@@ -117,7 +118,8 @@
           </v-card>
         </v-card-actions>
     </v-card>
-    <v-card outlined class="ma-2 px-0" min-width="1600">
+    <v-container class="pa-2">
+    <v-card outlined class="ma-0 px-0">
       <v-data-iterator
       :items="results"
       :items-per-page="3000"
@@ -159,6 +161,7 @@
       </template>
     </v-data-iterator>
     </v-card>
+    </v-container>
 </v-layout>
 </template>
 <script>
@@ -242,13 +245,39 @@ export default {
           { digits:[5, '▢▢', '▢▢',], signs: ['+','='] },
           { digits:['▢', 5, '▢▢'], signs: ['+', '='] },
           { digits:['▢▢', 2, '▢▢'], signs: ['+', '='] },
-          { digits:['▢▢', '▢▢', '▢▢▢'], signs: ['*', '='] },
+          { digits:['▢▢', 35, '▢▢▢'], signs: ['*', '='] },
         ],
         verticalSigns:[
           ['+', '+','='],
           ['+', '+', '='],
           ['*', '+', '='],
         ],
+      },
+      {
+        horisontalPatterns:[
+          { digits:['▢', '▢', '▢▢',], signs: ['*','='] },
+          { digits:['▢▢', '▢', '▢▢'], signs: ['-', '='] },
+          { digits:['▢▢', '▢', '▢'], signs: ['/', '='] },
+        ],
+        verticalSigns:[
+          ['+','='],
+          ['-','='],
+          ['-', '='],
+        ]
+      },
+      {
+        horisontalPatterns:[
+          { digits:['▢','▢','▢','▢','▢',], signs: ['+','+','+','='] },
+          { digits:['▢','▢','▢','▢','▢',], signs: ['-','-','-','='] },
+          { digits:['▢','▢','▢','▢','▢',], signs: ['-','+','-','='] },
+        ],
+        verticalSigns:[
+          ['+','='],
+          ['-','='],
+          ['+','='],
+          ['-','='],
+          ['+','=']
+        ]
       },
     ],
     matrixData: [],
@@ -258,7 +287,7 @@ export default {
     prettyPatterns() {
       let patternSet = [];
       let signs = transpose(this.input[this.radioGroup].verticalSigns);
-      this.input[this.radioGroup].horisontalPatterns.forEach((element,index) => {
+      this.input[this.radioGroup].horisontalPatterns.map((element,index) => {
         patternSet.push(zipSignsNumbers(element.signs, element.digits));
         if(signs[index]!== undefined)
           patternSet.push(signs[index].toString().replace('[','').replace(']','').replace(/,/g,'  '))
@@ -269,12 +298,17 @@ export default {
   methods: {
     addRow() {
       this.loading = true;
+      this.currentOperation.length = 0;
       setTimeout(() => {
-          let res = evaluateExpressionMatrix(this.input[this.radioGroup]);;
+          let selectedMatrix = JSON.parse(JSON.stringify(this.input[this.radioGroup]));
+          let res = evaluateExpressionMatrix(selectedMatrix);
           this.results = [...res];
           this.loading = false;
-        }, 1000)
+        }, 1000);
       
+    },
+    prettyPattern(index){
+      return zipSignsNumbers(element.signs, element.digits);
     },
     outMatrixRow(index, value) {
       return zipSignsNumbers(index, value);
@@ -293,7 +327,7 @@ export default {
       );
     },
     savePattern(){
-      this.input.push(this.newPattern);
+      this.input.push(JSON.parse(JSON.stringify(this.newPattern)));
     }
   },
 };
