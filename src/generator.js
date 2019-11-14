@@ -20,7 +20,7 @@ export function evaluateExpressionMatrix(matrix) {
     for (let index = 0; index < rowAmount; index++) {
         solvedRows.push(buildExpression(evaluations[index].digits, evaluations[index].signs));
     }
-    latestAction.push(`All [${solvedRows.length}] expressions built in ${Date.now() - start} ms`);
+    log(`All [${solvedRows.length}] expressions built in ${Date.now() - start} ms`);
     start = Date.now(); 
     //create all combinations of hosrizontal solutions
 
@@ -28,7 +28,7 @@ export function evaluateExpressionMatrix(matrix) {
         sets.push(values);
     }
 
-    latestAction.push(`All [${sets.length}] combined in ${Date.now() - start} ms`);
+    log(`All [${sets.length}] combined in ${Date.now() - start} ms`);
     start = Date.now(); 
 
     const setsAmount = sets.length;
@@ -39,13 +39,13 @@ export function evaluateExpressionMatrix(matrix) {
             subset.push(sets[index].splice(0,colAmount));
         sets[index] = subset;
     }
-    latestAction.push(`All [${setsAmount}] flat in ${Date.now() - start} ms`);
+    log(`All [${setsAmount}] flat in ${Date.now() - start} ms`);
     start = Date.now(); 
 
     for (let index = 0; index < setsAmount; index++) {
         sets[index] = transpose(sets[index]);
     }
-    latestAction.push(`All transposed in ${Date.now() - start} ms`);
+    log(`All transposed in ${Date.now() - start} ms`);
     start = Date.now(); 
 
     for (let index = 0; index < setsAmount; index++) {
@@ -62,7 +62,7 @@ export function evaluateExpressionMatrix(matrix) {
             validSets.push(transpose(sets[index]));
         else sets[index] = null;
     }
-    latestAction.push(`Separated valid in ${Date.now() - start} ms`);
+    log(`Separated valid in ${Date.now() - start} ms`);
     start = Date.now(); 
 
     return validSets;
@@ -84,23 +84,15 @@ export function buildExpression(elements, operators) {
             elements[index] = [...Array(Math.pow(10,elements[index].length)).keys()].slice(Math.pow(10,elements[index].length-1));
     }
     elements.forEach((i,index) => Array.isArray(i) !== true ? elements[index] = [i] : elements[index] = i);
-    const nelements = [];
+    log(`Resolved variations in ${Date.now() - start} ms`);
+
     for (const values of bigCartesian(elements)) {
-        nelements.push(values);
-    }
-
-
-    latestAction.push(`Resolved variations in ${Date.now() - start} ms`);
-    start = Date.now(); 
-    const toEquateAmount = nelements.length;
-    for (let index = 0; index < toEquateAmount; index++) {
-        const equationResult = tryEquate(operators, nelements[index]);
-        if(equationResult) {
-            expressionSolutions.push(nelements[index]);
+        if(tryEquate(operators, values)) {
+            expressionSolutions.push(values);
         }
-            
     }
-    latestAction.push(`Evaluated expressions in ${Date.now() - start} ms`);
+
+    log(`Evaluated expressions in ${Date.now() - start} ms`);
     start = Date.now(); 
     return expressionSolutions;
     
@@ -124,4 +116,9 @@ export function zipSignsNumbers(signs, numbers) {
     }
     zip.push(numbers[numbersAmount]);
     return zip.join('');
+}
+
+function log(message) {
+    latestAction.push(message);
+    console.log(message);
 }
