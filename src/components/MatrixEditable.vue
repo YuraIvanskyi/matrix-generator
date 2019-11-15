@@ -31,13 +31,14 @@
     <v-card outlined class="ma-2">
         <v-card-title>Pre-defined patterns:</v-card-title>
         <v-divider/>
-        <v-card-actions>
+        <v-card-actions class="pa-2">
           <v-radio-group v-model="radioGroup">
             <v-radio
               v-for="(n,i) in Object.keys(input)"
               :key="i"
               :label="`Pattern ${n}`"
               :value="n"
+              class="ml-3"
             ></v-radio>
           </v-radio-group>
         </v-card-actions>
@@ -124,7 +125,6 @@
       :items="results"
       :items-per-page="3000"
       :loading="loading"
-      :no-data-text="'No solutions for input.'"
     >
     <template v-slot:header>
         <v-toolbar
@@ -136,6 +136,9 @@
         >
           <v-toolbar-title>Found {{ results.length }} solutions:</v-toolbar-title>
         </v-toolbar>
+      </template>
+      <template v-slot:no-data>
+        <v-card-text>No solutions for requested pattern.</v-card-text>
       </template>
       <template v-slot:default="props">
         <v-row class="px-2">
@@ -167,7 +170,7 @@
 <script>
 /* eslint-disable */
 import MatrixCell from './MatrixCell.vue';
-import { buildExpression, latestAction, zipSignsNumbers, evaluateExpressionMatrix, transpose } from '../generator';
+import { latestAction, zipSignsNumbers, evaluateExpressionMatrix, transpose } from '../generator';
 
 export default {
   components: {
@@ -208,7 +211,7 @@ export default {
         horisontalPatterns:[
           { digits:['▢','▢', '▢▢',], signs: ['+','='] },
           { digits:['▢▢', '▢', '▢'], signs: ['-', '='] },
-          { digits:['▢▢','▢', '▢▢▢'], signs: ['+', '='] },
+          { digits:['▢▢','▢', '▢▢'], signs: ['+', '='] },
         ],
         verticalSigns:[
           ['*','='],
@@ -245,7 +248,7 @@ export default {
           { digits:[5, '▢▢', '▢▢',], signs: ['+','='] },
           { digits:['▢', 5, '▢▢'], signs: ['+', '='] },
           { digits:['▢▢', 2, '▢▢'], signs: ['+', '='] },
-          { digits:['▢▢', 35, '▢▢▢'], signs: ['*', '='] },
+          { digits:['▢▢', '▢▢', '▢▢▢'], signs: ['*', '='] },
         ],
         verticalSigns:[
           ['+', '+','='],
@@ -267,16 +270,15 @@ export default {
       },
       {
         horisontalPatterns:[
-          { digits:['▢','▢','▢','▢','▢',], signs: ['+','+','+','='] },
-          { digits:['▢','▢','▢','▢','▢',], signs: ['-','-','-','='] },
-          { digits:['▢','▢','▢','▢','▢',], signs: ['-','+','-','='] },
+          { digits:['▢','▢','▢','▢',], signs: ['+','+','='] },
+          { digits:['▢','▢','▢','▢',], signs: ['-','-','='] },
+          { digits:['▢','▢','▢','▢'], signs: ['-','+','='] },
         ],
         verticalSigns:[
           ['+','='],
           ['-','='],
           ['+','='],
-          ['-','='],
-          ['+','=']
+          ['-','=']
         ]
       },
     ],
@@ -306,9 +308,6 @@ export default {
           this.loading = false;
         }, 1000);
       
-    },
-    prettyPattern(index){
-      return zipSignsNumbers(element.signs, element.digits);
     },
     outMatrixRow(index, value) {
       return zipSignsNumbers(index, value);

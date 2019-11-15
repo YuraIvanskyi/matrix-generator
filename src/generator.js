@@ -6,6 +6,7 @@ var start = 0;
 export var latestAction = [];
 
 export function evaluateExpressionMatrix(matrix) {
+    let totalOperationTime = Date.now();
     const evaluations = [...matrix.horisontalPatterns];
     const rowAmount = matrix.horisontalPatterns.length;
     const colAmount = matrix.verticalSigns.length;
@@ -20,32 +21,55 @@ export function evaluateExpressionMatrix(matrix) {
     for (let index = 0; index < rowAmount; index++) {
         solvedRows.push(buildExpression(evaluations[index].digits, evaluations[index].signs));
     }
-    log(`All [${solvedRows.length}] expressions built in ${Date.now() - start} ms`);
+    log(`All [${solvedRows.length}] expressions built in ${Date.now() - totalOperationTime} ms`);
     start = Date.now(); 
     //create all combinations of hosrizontal solutions
 
     for (const values of bigCartesian(solvedRows)) {
-        sets.push(values);
+        //sets.push(values);
+
+        let isValidSet = true;
+        for (let setIndex = 0; setIndex < colAmount; setIndex++) {
+            const columnEq = getCol(values,setIndex);
+            const eqResult = tryEquate(verticalSigns[setIndex], columnEq);
+            if(!eqResult) {
+                isValidSet = false;
+                break;
+            }
+        }
+        if(isValidSet)
+            validSets.push(values);
     }
 
-    log(`All [${sets.length}] combined in ${Date.now() - start} ms`);
+    /*log(`All [${sets.length}] combined in ${Date.now() - start} ms`);
     start = Date.now(); 
 
     const setsAmount = sets.length;
-    for (let index = 0; index < setsAmount; index++) {
-        sets[index] = sets[index].flat(Infinity);
-        let subset = [];
-        while (sets[index].length !== 0 )
-            subset.push(sets[index].splice(0,colAmount));
-        sets[index] = subset;
-    }
-    log(`All [${setsAmount}] flat in ${Date.now() - start} ms`);
-    start = Date.now(); 
 
+    //we have all matrices with horisontally fitting solutions
+    //now we need to save those which are also fitting vertically
+
+   for (let index = 0; index < setsAmount; index++) {
+        let isValidSet = true;
+        for (let setIndex = 0; setIndex < colAmount; setIndex++) {
+            const columnEq = getCol(sets[index],setIndex);
+            const eqResult = tryEquate(verticalSigns[setIndex], columnEq);
+            if(!eqResult) {
+                isValidSet = false;
+                break;
+            }
+        }
+        if(isValidSet)
+            validSets.push(sets[index]);
+        else sets[index] = null;
+    }
+*/
+/*
     for (let index = 0; index < setsAmount; index++) {
         sets[index] = transpose(sets[index]);
     }
-    log(`All transposed in ${Date.now() - start} ms`);
+
+    log(`All [${sets.length}] transposed in ${Date.now() - start} ms`);
     start = Date.now(); 
 
     for (let index = 0; index < setsAmount; index++) {
@@ -61,21 +85,27 @@ export function evaluateExpressionMatrix(matrix) {
         if(isValidSet)
             validSets.push(transpose(sets[index]));
         else sets[index] = null;
-    }
-    log(`Separated valid in ${Date.now() - start} ms`);
+    }*/
+    log(`Separated [${validSets.length}] valid in ${Date.now() - start} ms`);
     start = Date.now(); 
-
+    log(`Total operation time - [${(Date.now() - totalOperationTime)/1000}] s.`)
     return validSets;
 
 }
 
-export function transpose(a) {
-    return Object.keys(a[0]).map(function(c) {
-        return a.map(function(r) { return r[c]; });
-    });
+function getCol(arr, i) {
+    const els = [];
+    for(const el in arr)
+        els.push(arr[el][i]);
+    return els;
 }
 
-export function buildExpression(elements, operators) {
+export function transpose(matrix) {
+    return Object.keys(matrix[0])
+        .map(colNumber => matrix.map(rowNumber => rowNumber[colNumber]));
+}
+
+function buildExpression(elements, operators) {
     const expressionSolutions = [];
     const elementsAmount = elements.length;
     for (let index = 0; index < elementsAmount; index++) {
