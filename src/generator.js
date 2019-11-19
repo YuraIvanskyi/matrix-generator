@@ -5,7 +5,7 @@ const bigCartesian = require('big-cartesian');
 var start = 0;
 export var latestAction = [];
 
-export function evaluateExpressionMatrix(matrix) {
+export function evaluateExpressionMatrix(matrix, single) {
     let totalOperationTime = Date.now();
     const evaluations = [...matrix.horisontalPatterns];
     const rowAmount = matrix.horisontalPatterns.length;
@@ -24,7 +24,7 @@ export function evaluateExpressionMatrix(matrix) {
     log(`All [${solvedRows.length}] expressions built in ${Date.now() - totalOperationTime} ms`);
     start = Date.now(); 
     //create all combinations of hosrizontal solutions
-
+    let foundCount = 0;
     for (const values of bigCartesian(solvedRows)) {
         //sets.push(values);
 
@@ -37,8 +37,14 @@ export function evaluateExpressionMatrix(matrix) {
                 break;
             }
         }
-        if(isValidSet)
+        if(isValidSet) {
+            foundCount++;
+            if(foundCount % 100 === 0)
+                console.log(`Found ${foundCount} solutions by now, processing...`)
             validSets.push(values);
+            if(single)
+                break;
+        }
     }
 
     /*log(`All [${sets.length}] combined in ${Date.now() - start} ms`);

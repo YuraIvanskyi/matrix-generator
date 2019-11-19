@@ -8,11 +8,15 @@
     </v-overlay>
     <v-card outlined class="ma-2" width="500">
         <v-card-title>Selected equation patterns:
-          <v-spacer/>
-          <v-btn class="" color="primary" @click="addRow">
+        </v-card-title>
+        <v-layout justify-start class="ma-2">
+          <v-btn class="mr-2" color="primary" @click="evaluate">
           <v-icon class="mr-1">mdi-calculator-variant</v-icon> Evaluate
           </v-btn>
-        </v-card-title>
+          <v-btn class="" color="primary" @click="evaluateFirst">
+          <v-icon class="mr-1">mdi-calculator-variant</v-icon> Evaluate First Fit
+          </v-btn>
+        </v-layout>
         <v-divider/>
         <v-card-actions>
             <v-layout justify-center>
@@ -223,7 +227,7 @@ export default {
         horisontalPatterns:[
           { digits:['▢▢','▢', '▢▢',], signs: ['-','='] },
           { digits:['▢', '▢', '▢▢'], signs: ['+', '='] },
-          { digits:[154,'▢▢', '▢▢▢'], signs: ['+', '='] },
+          { digits:['▢▢','▢▢', '▢▢▢'], signs: ['+', '='] },
         ],
         verticalSigns:[
           ['*','='],
@@ -242,19 +246,6 @@ export default {
           ['+','='],
           ['*', '='],
         ]
-      },
-      {
-        horisontalPatterns:[
-          { digits:[5, '▢▢', '▢▢',], signs: ['+','='] },
-          { digits:['▢', 5, '▢▢'], signs: ['+', '='] },
-          { digits:['▢▢', 2, '▢▢'], signs: ['+', '='] },
-          { digits:['▢▢', '▢▢', '▢▢▢'], signs: ['*', '='] },
-        ],
-        verticalSigns:[
-          ['+', '+','='],
-          ['+', '+', '='],
-          ['*', '+', '='],
-        ],
       },
       {
         horisontalPatterns:[
@@ -312,12 +303,23 @@ export default {
     }
   },
   methods: {
-    addRow() {
+    evaluate() {
       this.loading = true;
       this.currentOperation.length = 0;
       setTimeout(() => {
           let selectedMatrix = JSON.parse(JSON.stringify(this.input[this.radioGroup]));
-          let res = evaluateExpressionMatrix(selectedMatrix);
+          let res = evaluateExpressionMatrix(selectedMatrix, false);
+          this.results = [...res];
+          this.loading = false;
+        }, 1000);
+      
+    },
+    evaluateFirst() {
+      this.loading = true;
+      this.currentOperation.length = 0;
+      setTimeout(() => {
+          let selectedMatrix = JSON.parse(JSON.stringify(this.input[this.radioGroup]));
+          let res = evaluateExpressionMatrix(selectedMatrix, true);
           this.results = [...res];
           this.loading = false;
         }, 1000);
