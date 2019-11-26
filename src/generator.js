@@ -5,7 +5,7 @@ const bigCartesian = require('big-cartesian');
 var start = 0;
 export var latestAction = [];
 
-export function evaluateExpressionMatrix(matrix, single) {
+export function evaluateExpressionMatrix(matrix, stopAmount) {
     let totalOperationTime = Date.now();
     const evaluations = [...matrix.horisontalPatterns];
     const rowAmount = matrix.horisontalPatterns.length;
@@ -26,7 +26,6 @@ export function evaluateExpressionMatrix(matrix, single) {
     //create all combinations of hosrizontal solutions
     let foundCount = 0;
     for (const values of bigCartesian(solvedRows)) {
-        //sets.push(values);
 
         let isValidSet = true;
         for (let setIndex = 0; setIndex < colAmount; setIndex++) {
@@ -42,56 +41,13 @@ export function evaluateExpressionMatrix(matrix, single) {
             if(foundCount % 100 === 0)
                 console.log(`Found ${foundCount} solutions by now, processing...`)
             validSets.push(values);
-            if(single)
-                break;
-        }
-    }
-
-    /*log(`All [${sets.length}] combined in ${Date.now() - start} ms`);
-    start = Date.now(); 
-
-    const setsAmount = sets.length;
-
-    //we have all matrices with horisontally fitting solutions
-    //now we need to save those which are also fitting vertically
-
-   for (let index = 0; index < setsAmount; index++) {
-        let isValidSet = true;
-        for (let setIndex = 0; setIndex < colAmount; setIndex++) {
-            const columnEq = getCol(sets[index],setIndex);
-            const eqResult = tryEquate(verticalSigns[setIndex], columnEq);
-            if(!eqResult) {
-                isValidSet = false;
+            if(foundCount === stopAmount) {
+                console.log(`Found all ${stopAmount} needed.`)
                 break;
             }
         }
-        if(isValidSet)
-            validSets.push(sets[index]);
-        else sets[index] = null;
-    }
-*/
-/*
-    for (let index = 0; index < setsAmount; index++) {
-        sets[index] = transpose(sets[index]);
     }
 
-    log(`All [${sets.length}] transposed in ${Date.now() - start} ms`);
-    start = Date.now(); 
-
-    for (let index = 0; index < setsAmount; index++) {
-        const currentSetLength = sets[index].length;
-        let isValidSet = true;
-        for (let setIndex = 0; setIndex < currentSetLength; setIndex++) {
-            const eqResult = tryEquate(verticalSigns[setIndex], sets[index][setIndex]);
-            if(!eqResult) {
-                isValidSet = false;
-                break;
-            }
-        }
-        if(isValidSet)
-            validSets.push(transpose(sets[index]));
-        else sets[index] = null;
-    }*/
     log(`Separated [${validSets.length}] valid in ${Date.now() - start} ms`);
     start = Date.now(); 
     log(`Total operation time - [${(Date.now() - totalOperationTime)/1000}] s.`)

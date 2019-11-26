@@ -1,14 +1,13 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <v-card-title></v-card-title>
-  </div>
+  <matrix-view/>
 </template>
 
 <script>
-
+import MatrixView from '../components/MatrixView.vue';
 
 export default {
-  name: 'home',
+  components: {
+    MatrixView,
+  },
 };
 </script>

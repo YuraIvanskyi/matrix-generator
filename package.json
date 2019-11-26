@@ -11,6 +11,7 @@
     "big-cartesian": "^1.1.1",
     "core-js": "^3.3.2",
     "expr-eval": "^2.0.2",
+    "file-saver": "^2.0.2",
     "mathjs": "^6.2.3",
     "vue": "^2.6.10",
     "vue-router": "^3.1.3",

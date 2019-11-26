@@ -57,7 +57,7 @@
       color="primary"
       app
     >
-      <span class="white--text">Yura's diploma</span>
+      <span class="white--text">Magister's degree acquisition attempt</span>
     </v-footer>
   </v-app>
 </template>

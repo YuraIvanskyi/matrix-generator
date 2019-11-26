@@ -9,13 +9,24 @@
     <v-card outlined class="ma-2" width="500">
         <v-card-title>Selected equation patterns:
         </v-card-title>
-        <v-layout justify-start class="ma-2">
+        <v-layout justify-start wrap class="ma-2">
           <v-btn class="mr-2" color="primary" @click="evaluate">
           <v-icon class="mr-1">mdi-calculator-variant</v-icon> Evaluate
           </v-btn>
           <v-btn class="" color="primary" @click="evaluateFirst">
           <v-icon class="mr-1">mdi-calculator-variant</v-icon> Evaluate First Fit
           </v-btn>
+          <v-btn class="mt-2" color="primary" @click="evaluateFirstN">
+          <v-icon class="mr-1">mdi-calculator-variant</v-icon> Evaluate First N
+          </v-btn>
+          <v-text-field
+            class="ml-2 mt-2"
+            label="N Solutions"
+            dense
+            outlined
+            v-model="expectedResAmount"
+            prepend-inner-icon="mdi-progress-check"
+          ></v-text-field>
         </v-layout>
         <v-divider/>
         <v-card-actions>
@@ -175,6 +186,7 @@
 /* eslint-disable */
 import MatrixCell from './MatrixCell.vue';
 import { latestAction, zipSignsNumbers, evaluateExpressionMatrix, transpose } from '../generator';
+import { solutions, patterns } from '../main.js';
 
 export default {
   components: {
@@ -186,6 +198,7 @@ export default {
     loading: false,
     radioGroup: 1,
     currentOperation: latestAction,
+    expectedResAmount:100,
     matrices: undefined,
     editableSigns: '',
     editableInterSigns: '',
@@ -197,18 +210,14 @@ export default {
     input: [
       {
         horisontalPatterns:[
-          { digits:['▢', 2, '▢', 5, 30,], signs: ['+','*','*','='] },
-          { digits:['▢', '▢', 16,'▢', '▢▢'], signs: ['+','-','*', '='] },
-          { digits:['▢▢', '▢', '▢', 8, '▢▢'], signs: ['+','/','*', '='] },
-          { digits:['▢', 7,'▢','▢▢', '▢▢'], signs: ['+', '*', '-', '='] },
-          { digits:['▢▢', 16,'▢▢','▢▢', 155], signs: ['+', '+', '+', '='] },
+          { digits:['▢▢', '▢▢', '▢▢',], signs: ['+','='] },
+          { digits:['▢▢', '▢▢', '▢▢'], signs: ['-', '='] },
+          { digits:['▢▢', '▢▢', '▢▢'], signs: ['+', '='] },
         ],
         verticalSigns:[
-          ['+','+','+', '='],
-          ['+','+','+', '='],
-          ['+','+','+', '='],
-          ['+','+','+', '='],
-          ['+','+','+', '=']
+          ['-','='],
+          ['+','='],
+          ['-', '='],
         ]
       },
       {
@@ -303,13 +312,21 @@ export default {
     }
   },
   methods: {
+    save(results, pattern) {
+      solutions.push({
+        id : Date.now(),
+        results : results,
+        pattern : pattern,
+      });
+    },
     evaluate() {
       this.loading = true;
       this.currentOperation.length = 0;
       setTimeout(() => {
           let selectedMatrix = JSON.parse(JSON.stringify(this.input[this.radioGroup]));
-          let res = evaluateExpressionMatrix(selectedMatrix, false);
+          let res = evaluateExpressionMatrix(selectedMatrix, 5000);
           this.results = [...res];
+          this.save([...res], JSON.parse(JSON.stringify(this.input[this.radioGroup])));
           this.loading = false;
         }, 1000);
       
@@ -319,8 +336,21 @@ export default {
       this.currentOperation.length = 0;
       setTimeout(() => {
           let selectedMatrix = JSON.parse(JSON.stringify(this.input[this.radioGroup]));
-          let res = evaluateExpressionMatrix(selectedMatrix, true);
+          let res = evaluateExpressionMatrix(selectedMatrix, 1);
           this.results = [...res];
+          this.save([...res], JSON.parse(JSON.stringify(this.input[this.radioGroup])));
+          this.loading = false;
+        }, 1000);
+      
+    },
+    evaluateFirstN() {
+      this.loading = true;
+      this.currentOperation.length = 0;
+      setTimeout(() => {
+          let selectedMatrix = JSON.parse(JSON.stringify(this.input[this.radioGroup]));
+          let res = evaluateExpressionMatrix(selectedMatrix, this.expectedResAmount);
+          this.results = [...res];
+          this.save([...res], JSON.parse(JSON.stringify(this.input[this.radioGroup])));
           this.loading = false;
         }, 1000);
       

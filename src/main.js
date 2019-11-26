@@ -5,6 +5,9 @@ import vuetify from './plugins/vuetify';
 
 Vue.config.productionTip = false;
 
+export const solutions = [];
+export const patterns = {};
+
 new Vue({
   router,
   vuetify,
